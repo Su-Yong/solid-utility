@@ -1,30 +1,52 @@
 import { Show, children, createEffect, createSignal, mergeProps, on, onCleanup, onMount, splitProps } from 'solid-js';
 
-import type { JSX } from 'solid-js/jsx-runtime';
 import { cx } from './utils/classNames';
 import { createStyleSheet } from './utils/styles';
 
+import type { JSX } from 'solid-js/jsx-runtime';
+
 const useStyleSheet = createStyleSheet((className) => `
   .${className} {
-    
     position: relative;
     white-space: nowrap;
 
     display: flex;
-    flex-direction: row;
     justify-content: flex-start;
     align-items: center;
     
     will-change: scroll-position;
     overflow: auto;
   }
-
-  .${className} > .marquee {
-    animation: marquee linear infinite;
-    animation-duration: var(--duration, 10s);
+  .${className}.left,
+  .${className}.right {
+    flex-direction: row;
+  }
+  
+  .${className}.up,
+  .${className}.down {
+    flex-direction: column;
   }
 
-  @keyframes marquee {
+  .${className} > .marquee {
+    animation-duration: var(--duration, 10s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+  
+  .${className}.left > .marquee {
+    animation-name: marquee-left;
+  }
+  .${className}.right > .marquee {
+    animation-name: marquee-right;
+  }
+  .${className}.up > .marquee {
+    animation-name: marquee-up;
+  }
+  .${className}.down > .marquee {
+    animation-name: marquee-down;
+  }
+
+  @keyframes marquee-left {
     0% {
       transform: translateX(0%);
     }
@@ -32,51 +54,92 @@ const useStyleSheet = createStyleSheet((className) => `
       transform: translateX(-100%);
     }
   }
+  @keyframes marquee-right {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+  @keyframes marquee-up {
+    0% {
+      transform: translateY(0%);
+    }
+    100% {
+      transform: translateY(-100%);
+    }
+  }
+  @keyframes marquee-down {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(0%);
+    }
+  }
 `);
 
 export interface MarqueeProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;
+
+  mode?: 'auto' | 'scroll';
   gap?: number;
   speed?: number;
+  direction?: 'left' | 'right' | 'up' | 'down';
 }
 const Marquee = (props: MarqueeProps) => {
-  const [local, leftProps] = splitProps(mergeProps({ gap: 0, speed: 70 }, props), ['gap', 'speed']);
+  const [local, leftProps] = splitProps(mergeProps({
+    gap: 0,
+    speed: 70,
+    direction: 'left',
+    mode: 'auto',
+  }, props), ['mode', 'gap', 'speed', 'direction']);
   const child1 = children(() => props.children);
   const child2 = children(() => props.children);
 
-  const marqueeClassName = useStyleSheet();
-
+  /* signals */
   let dom!: HTMLDivElement;
+  let child!: HTMLDivElement;
   let ignore = false;
   const [useMarquee, setUseMarquee] = createSignal(false);
   const [scrollDuration, setScrollDuration] = createSignal(10000);
 
+  /* defines */
+  const marqueeClassName = useStyleSheet();
+  const isHorizontal = () => local.direction === 'left' || local.direction === 'right';
   const marqueeStyle = () => {
-    console.log('scrollDuration', scrollDuration());
+    const value = child?.clientHeight ? `${child.clientHeight}px` : 'auto';
     if (typeof leftProps.style === 'string') {
-      return `${leftProps.style}; overflow: hidden; --duration: ${scrollDuration()}ms;`;
+      const options = isHorizontal() ? '' : `height: ${value};`;
+
+      return `${leftProps.style}; overflow: hidden; --duration: ${scrollDuration()}ms;${options}`;
     };
     
     return {
       ...leftProps.style,
       overflow: 'hidden',
+      height: isHorizontal() ? '' : `${value}`,
       '--duration': `${scrollDuration()}ms`,
     }
   };
 
+  /* lifecycle */
   const updateOverflow = () => {
-    const { scrollWidth, clientWidth } = dom;
+    const scrollValue = isHorizontal() ? dom.scrollWidth : dom.scrollHeight;
+    const clientValue = isHorizontal() ? dom.clientWidth : dom.clientHeight;
 
     const offset = useMarquee() ? 2 : 1;
     const gap = useMarquee() ? local.gap : 0;
-    const newValue = (scrollWidth - gap) / offset > clientWidth;
+    const newValue = (scrollValue - gap) / offset > clientValue;
 
     const shouldChange = !ignore;
     ignore = false;
 
-    const duration = (scrollWidth / local.speed) * 1000;
+    const duration = (scrollValue / local.speed) * 1000;
     setScrollDuration(Number.isFinite(duration) ? duration : 10000);
-    if (newValue !== useMarquee() && shouldChange) {
+
+    if (local.mode === 'auto' && newValue !== useMarquee() && shouldChange) {
       setUseMarquee(newValue);
 
       ignore = true;
@@ -108,9 +171,14 @@ const Marquee = (props: MarqueeProps) => {
     });
   });
 
-  createEffect(on(() => local.speed, () => {
+  createEffect(on([() => local.speed, () => local.direction], () => {
     updateOverflow();
   }));
+  createEffect(() => {
+    if (local.mode === 'scroll') {
+      setUseMarquee(true);
+    }
+  })
 
   onCleanup(() => {
     observer.disconnect();
@@ -121,10 +189,11 @@ const Marquee = (props: MarqueeProps) => {
       {...leftProps}
       ref={dom}
       style={marqueeStyle()}
-      class={cx(marqueeClassName, leftProps.class)}
+      class={cx(marqueeClassName, local.direction, leftProps.class)}
     >
       <div
-        class={`${useMarquee() ? 'marquee ignore' : ''}`}
+        ref={child}
+        class={`${useMarquee() ? `marquee ignore` : ''}`}
         style={`padding-right: ${useMarquee() ? local.gap : 0}px`}
       >
         {child1()}

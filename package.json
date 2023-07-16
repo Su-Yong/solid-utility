@@ -1,7 +1,7 @@
 {
   "name": "@suyongs/solid-utility",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Utilities for SolidJS",
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",

@@ -13,7 +13,7 @@ function App() {
   const [customText, setCustomText] = createSignal('Custom Text');
  
   const updateRandomText = () => {
-    const newText = LOREM_IPSUM.slice(0, ~~(Math.random() * LOREM_IPSUM.length));
+    const newText = LOREM_IPSUM.slice(0, ~~(Math.random() * 200));
 
     setRandomText(newText);
   }
@@ -22,7 +22,7 @@ function App() {
     <div class={'container'}>
       <div class={'card'}>
         <div class={'card-title'}>
-          Random Text
+          Auto Mode
         </div>
         <button onClick={() => updateRandomText()}>
           Change
@@ -49,6 +49,26 @@ function App() {
         
         <Marquee>
           {LOREM_IPSUM.slice(0, 400)}
+        </Marquee>
+      </div>
+      <div class={'card'}>
+        <div class={'card-title'}>
+          direction
+        </div>
+        <Marquee mode={'scroll'} direction={'left'}>
+          {LOREM_IPSUM.slice(0, 100)}
+        </Marquee>
+        
+        <Marquee mode={'scroll'} direction={'right'}>
+          {LOREM_IPSUM.slice(0, 100)}
+        </Marquee>
+        
+        <Marquee mode={'scroll'} direction={'up'}>
+          {LOREM_IPSUM.slice(0, 100)}
+        </Marquee>
+        
+        <Marquee mode={'scroll'} direction={'down'}>
+          {LOREM_IPSUM.slice(0, 100)}
         </Marquee>
       </div>
       <div class={'card'}>
