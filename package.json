@@ -21,6 +21,7 @@
     "build:only": "vite build",
     "dev": "vite build --watch",
     "example:marquee": "cd examples/marquee && npm run dev",
+    "example:transition": "cd examples/transition && npm run dev",
     "release": "release-it"
   },
   "keywords": [],

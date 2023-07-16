@@ -1,0 +1,67 @@
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.225s linear;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+
+.test-enter-active {
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: 100% 50%;
+}
+.test-leave-active {
+  transition: all 0.3s cubic-bezier(0.5, 0, 0.75, 0);
+  transform-origin: 100% 50%;
+}
+.test-move {
+  transition: all 0.625s ease-in-out;
+  transform-origin: 100% 50%;
+}
+
+.test-enter-from {
+  transform: translateY(200%) scale(0.9);
+  opacity: 0;
+  filter: blur(4px);
+}
+
+.test-leave-active {
+  position: absolute;
+}
+
+.test-leave-to {
+  transform: translateY(-200%) scale(0.9);
+  opacity: 0;
+  filter: blur(4px);
+}
+
+.test2-enter-active {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center;
+}
+.test2-leave-active {
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center;
+}
+.test2-move {
+  transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  transform-origin: center;
+}
+
+.test2-enter-from {
+  transform: scaleX(50%) scaleY(120%);
+  opacity: 0;
+}
+
+.test2-leave-active {
+  position: absolute;
+}
+
+.test2-leave-to {
+  transform: scaleX(120%) scaleY(30%) translateY(30%);
+  opacity: 0;
+  filter: blur(4px);
+}
