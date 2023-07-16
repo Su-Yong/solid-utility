@@ -1,9 +1,11 @@
 import { Show, children, createEffect, createSignal, mergeProps, on, onCleanup, onMount, splitProps } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
 
 import { cx } from './utils/classNames';
 import { createStyleSheet } from './utils/styles';
 
 import type { JSX } from 'solid-js/jsx-runtime';
+import type { ValidComponent, ComponentProps } from 'solid-js';
 
 const useStyleSheet = createStyleSheet((className) => `
   .${className} {
@@ -80,21 +82,29 @@ const useStyleSheet = createStyleSheet((className) => `
   }
 `);
 
-export interface MarqueeProps extends JSX.HTMLAttributes<HTMLDivElement> {
+export type MarqueeProps<T extends ValidComponent, P = ComponentProps<T>> = {
+  [K in keyof P]: P[K];
+} & JSX.HTMLAttributes<T> & {
+  component?: T;
   children: JSX.Element;
 
   mode?: 'auto' | 'scroll';
   gap?: number;
   speed?: number;
   direction?: 'left' | 'right' | 'up' | 'down';
+
+  // For type checking
+  style?: JSX.CSSProperties | string;
+  class?: string;
 }
-const Marquee = (props: MarqueeProps) => {
+const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
   const [local, leftProps] = splitProps(mergeProps({
+    component: 'div',
     gap: 0,
     speed: 70,
     direction: 'left',
     mode: 'auto',
-  }, props), ['mode', 'gap', 'speed', 'direction']);
+  }, props), ['mode', 'gap', 'speed', 'direction', 'component']);
   const child1 = children(() => props.children);
   const child2 = children(() => props.children);
 
@@ -185,28 +195,31 @@ const Marquee = (props: MarqueeProps) => {
   });
 
   return (
-    <div
+    <Dynamic
       {...leftProps}
       ref={dom}
+      component={local.component as ValidComponent}
       style={marqueeStyle()}
       class={cx(marqueeClassName, local.direction, leftProps.class)}
     >
-      <div
+      <Dynamic
+        component={local.component as ValidComponent}
         ref={child}
         class={`${useMarquee() ? `marquee ignore` : ''}`}
         style={`padding-right: ${useMarquee() ? local.gap : 0}px`}
       >
         {child1()}
-      </div>
+      </Dynamic>
       <Show when={useMarquee()}>
-        <div
+        <Dynamic
+          component={local.component as ValidComponent}
           class={'marquee'}
           style={`padding-right: ${local.gap}px`}
         >
           {child2()}
-        </div>
+        </Dynamic>
       </Show>
-    </div>
+    </Dynamic>
   );
 };
 
