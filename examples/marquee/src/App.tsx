@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 
-import { Marquee } from '@suyongs/solid-utility';
+import { Marquee, MarqueeProps } from '@suyongs/solid-utility';
 
 const LOREM_IPSUM = `
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla tincidunt mollis iaculis. Vestibulum nibh orci, dapibus sed ex eget, luctus lobortis libero. Mauris efficitur dui eget nisi pellentesque, nec consectetur nisi faucibus. Pellentesque fringilla, sapien quis volutpat euismod, est leo varius tortor, nec venenatis dui metus nec arcu. Integer eget efficitur lorem, nec condimentum enim. Nam eget aliquam orci. Ut laoreet felis id sem volutpat scelerisque. Sed auctor feugiat ante vel gravida. Maecenas vitae aliquet risus, non consequat lectus. Donec ut mauris elementum, cursus diam et, bibendum ante. Nam cursus facilisis erat, maximus blandit erat pellentesque eu. Nulla bibendum imperdiet orci sit amet commodo. Quisque justo libero, congue pulvinar nibh ac, dictum sollicitudin dui.
@@ -11,6 +11,7 @@ function App() {
   const [gap, setGap] = createSignal(0);
   const [speed, setSpeed] = createSignal(70);
   const [customText, setCustomText] = createSignal('Custom Text');
+  const [mode, setMode] = createSignal('auto');
  
   const updateRandomText = () => {
     const newText = LOREM_IPSUM.slice(0, ~~(Math.random() * 200));
@@ -75,10 +76,17 @@ function App() {
         <div class={'card-title'}>
           Custom Text
         </div>
+        <select value={mode()} onInput={(event) => setMode(event.target.value)} >
+          <option>auto</option>
+          <option>scroll</option>
+          <option>hover</option>
+          <option>force-hover</option>
+          <option>truncate</option>
+        </select>
         <input type={'number'} placeholder={'gap'} value={gap()} onInput={(event) => setGap(event.target.valueAsNumber)} />
         <input type={'number'} placeholder={'speed'} value={speed()} onInput={(event) => setSpeed(event.target.valueAsNumber)} />
         <input placeholder={'Write your own text'} value={customText()} onInput={(event) => setCustomText(event.target.value)} />
-        <Marquee gap={gap()} speed={speed()}>
+        <Marquee gap={gap()} speed={speed()} mode={mode() as MarqueeProps<any>['mode']}>
           {customText()}
         </Marquee>
       </div>

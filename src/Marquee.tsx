@@ -29,6 +29,11 @@ const useStyleSheet = createStyleSheet((className) => `
     flex-direction: column;
   }
 
+  .${className} > .truncate {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   .${className} > .marquee {
     animation-duration: var(--duration, 10s);
     animation-timing-function: linear;
@@ -88,7 +93,7 @@ export type MarqueeProps<T extends ValidComponent, P = ComponentProps<T>> = {
   component?: T;
   children: JSX.Element;
 
-  mode?: 'auto' | 'scroll';
+  mode?: 'auto' | 'scroll' | 'truncate' | 'hover' | 'force-hover';
   gap?: number;
   speed?: number;
   direction?: 'left' | 'right' | 'up' | 'down';
@@ -98,13 +103,13 @@ export type MarqueeProps<T extends ValidComponent, P = ComponentProps<T>> = {
   class?: string;
 }
 const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
-  const [local, leftProps] = splitProps(mergeProps({
+  const [local, events, leftProps] = splitProps(mergeProps({
     component: 'div',
     gap: 0,
     speed: 70,
     direction: 'left',
     mode: 'auto',
-  }, props), ['mode', 'gap', 'speed', 'direction', 'component']);
+  }, props), ['mode', 'gap', 'speed', 'direction', 'component'], ['onMouseEnter', 'onMouseLeave']);
   const child1 = children(() => props.children);
   const child2 = children(() => props.children);
 
@@ -114,6 +119,24 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
   let ignore = false;
   const [useMarquee, setUseMarquee] = createSignal(false);
   const [scrollDuration, setScrollDuration] = createSignal(10000);
+  const [hover, setHover] = createSignal(false);
+
+  /* computed */
+  const enableMarquee = () => {
+    if (local.mode === 'scroll') return true;
+    if (local.mode === 'force-hover') return hover();
+    if (local.mode === 'hover') return hover() && useMarquee();
+    if (local.mode === 'truncate') return false;
+    if (local.mode === 'auto') return useMarquee();
+
+    return false;
+  };
+  const enableTruncate = () => {
+    if (local.mode === 'hover') return true;
+    if (local.mode === 'truncate') return true;
+
+    return false;
+  }
 
   /* defines */
   const marqueeClassName = useStyleSheet();
@@ -188,11 +211,23 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
     if (local.mode === 'scroll') {
       setUseMarquee(true);
     }
-  })
+  });
 
   onCleanup(() => {
     observer.disconnect();
   });
+
+  /* callbacks */
+  const onMouseEnter = (event: MouseEvent) => {
+    setHover(true);
+
+    events.onMouseEnter?.(event);
+  };
+  const onMouseLeave = (event: MouseEvent) => {
+    setHover(false);
+
+    events.onMouseLeave?.(event);
+  };
 
   return (
     <Dynamic
@@ -201,16 +236,18 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
       component={local.component as ValidComponent}
       style={marqueeStyle()}
       class={cx(marqueeClassName, local.direction, leftProps.class)}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <Dynamic
         component={local.component as ValidComponent}
         ref={child}
-        class={`${useMarquee() ? `marquee ignore` : ''}`}
-        style={`padding-right: ${useMarquee() ? local.gap : 0}px`}
+        class={`${enableMarquee() ? `marquee ignore` : enableTruncate() ? 'truncate' : ''}`}
+        style={`padding-right: ${enableMarquee() ? local.gap : 0}px`}
       >
         {child1()}
       </Dynamic>
-      <Show when={useMarquee()}>
+      <Show when={enableMarquee()}>
         <Dynamic
           component={local.component as ValidComponent}
           class={'marquee'}
