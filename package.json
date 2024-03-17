@@ -28,21 +28,20 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/node": "^20.4.2",
-    "dotenv-cli": "^7.2.1",
-    "release-it": "^16.1.2",
-    "rimraf": "^5.0.1",
-    "terser": "^5.19.0",
-    "typescript": "^5.1.6",
-    "vite": "^5.1.6",
-    "vite-plugin-dts": "^3.3.0",
-    "vite-plugin-solid": "^2.10.2"
+    "@types/node": "20.11.28",
+    "dotenv-cli": "7.4.1",
+    "release-it": "17.1.1",
+    "rimraf": "5.0.5",
+    "terser": "5.29.2",
+    "typescript": "5.4.2",
+    "vite": "5.1.6",
+    "vite-plugin-dts": "3.7.3",
+    "vite-plugin-solid": "2.10.2"
   },
   "peerDependencies": {
     "solid-js": "*"
   },
   "dependencies": {
-    "flip-toolkit": "^7.1.0",
-    "nanoid": "^4.0.2"
+    "nanoid": "5.0.6"
   }
 }
