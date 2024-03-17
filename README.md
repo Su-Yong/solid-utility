@@ -2,6 +2,12 @@
 Utility component, hooks or anything else for Solid JS
 
 # Installation
+
+- pnpm
+```bash
+pnpm add @suyongs/solid-utility
+```
+
 - npm
 ```bash
 npm install --save @suyongs/solid-utility
@@ -50,11 +56,22 @@ const Component = () => {
 ### Marquee
 
 - `Marquee`: alternative for marquee tag
-  - `speed`: `[number]`, move speed of marquee. pixel per seconds, default is `70`
-  - `direction`: `left` `right` `up` `down`, default is `left`
-  - `mode`: `auto` `scroll`, in `auto` mode, contents are scrolled when overflow its parent, `scroll` mode always scrolled, default is `auto`
-  - `component`: `Component`, marquee can be any component, default is `div`
-  ~~- [ ] `behavior`: TODO~~
+  - Normal Property
+    - `speed`: `[number]`, move speed of marquee. pixel per seconds, default is `70`
+    - `gap`: `[number]`, gap between two marquee, default is `0`
+    - `direction`: `left` `right` `up` `down`, default is `left`
+    - `mode`: `[auto | scroll | truncate | hover | force-hover]` default is `auto`'
+      - `auto`: contents are scrolled when overflow its parent
+      - `scroll` mode always scrolled
+      - `truncate` mode will truncate the content when overflow
+      - `hover` mode will scroll when hover
+      - `force-hover` mode will scroll when hovered, even if it's not overflow
+    - `autoUpdate`: `[boolean]`, whether marquee should update automatically, default is `true`
+  - Headless Property
+    - `component`: `Component`, marquee can be any component, default is `div`
+    - `slots`: `{ first: Component; second: Component }` set internal component, default is same as `component`
+    - `slotProps`: `{ first: Props; second: Props }` internal component's properties
+    - `ref`: `MarqueeRef`, ref of marquee. It has `updateOverflow` method to update overflow status
 
 ```tsx
 import { Marquee } from '@suyongs/solid-utility';
@@ -63,7 +80,10 @@ const Component = () => {
 
   return (
     <Marquee component={'a'} href={'https://github.com'}>
-      if you want to make this marquee a tag, you should set component as a
+      if you want to make this marquee 'a' tag, you should set component as 'a'
+      <span>
+        Also, you can set any components as marquee's children
+      </span>
     </Marquee>
   );
 };

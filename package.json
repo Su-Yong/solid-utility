@@ -5,6 +5,8 @@
   "main": "dist/index.umd.js",
   "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
+  "homepage": "https://github.com/Su-Yong/solid-utility",
+  "bugs": "https://github.com/Su-Yong/solid-utility/issues",
   "files": [
     "dist"
   ],
@@ -24,8 +26,13 @@
     "example:transition": "cd examples/transition && pnpm dev",
     "release": "dotenv release-it"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "solid",
+    "solidjs",
+    "marquee",
+    "transition"
+  ],
+  "author": "Su-Yong",
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/node": "20.11.28",
