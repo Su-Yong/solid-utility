@@ -48,3 +48,11 @@ html, body {
   font-weight: 500;
   margin-bottom: 8px;
 }
+
+.tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+
+  background: #666666;
+  color: white;
+}

@@ -36,19 +36,19 @@ function App() {
         <div class={'card-title'}>
           Speed
         </div>
-        <Marquee>
+        <Marquee speed={10}>
           {LOREM_IPSUM.slice(0, 100)}
         </Marquee>
         
-        <Marquee>
+        <Marquee speed={35}>
           {LOREM_IPSUM.slice(0, 200)}
         </Marquee>
         
-        <Marquee>
+        <Marquee speed={70}>
           {LOREM_IPSUM.slice(0, 300)}
         </Marquee>
         
-        <Marquee>
+        <Marquee speed={140}>
           {LOREM_IPSUM.slice(0, 400)}
         </Marquee>
       </div>
@@ -70,6 +70,28 @@ function App() {
         
         <Marquee mode={'scroll'} direction={'down'}>
           {LOREM_IPSUM.slice(0, 100)}
+        </Marquee>
+      </div>
+      <div class={'card'}>
+        <div class={'card-title'}>
+          Element
+        </div>
+        <Marquee>
+          <span class={'tag'}>
+            {LOREM_IPSUM.slice(0, 20)}
+          </span>
+          <span class={'tag'}>
+            {LOREM_IPSUM.slice(20, 40)}
+          </span>
+          <span class={'tag'}>
+            {LOREM_IPSUM.slice(40, 60)}
+          </span>
+          <span class={'tag'}>
+            {LOREM_IPSUM.slice(60, 80)}
+          </span>
+          <span class={'tag'}>
+            {LOREM_IPSUM.slice(80, 100)}
+          </span>
         </Marquee>
       </div>
       <div class={'card'}>

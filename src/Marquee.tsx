@@ -1,11 +1,20 @@
-import { Show, children, createEffect, createSignal, mergeProps, on, onCleanup, onMount, splitProps } from 'solid-js';
+import type { ComponentProps, ValidComponent } from 'solid-js';
+import {
+  children,
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  mergeProps,
+  on,
+  onCleanup,
+  Show,
+  splitProps
+} from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-import { cx } from './utils/classNames';
-import { createStyleSheet } from './utils/styles';
+import { createStyleSheet, cx, sx } from './utils';
 
 import type { JSX } from 'solid-js/jsx-runtime';
-import type { ValidComponent, ComponentProps } from 'solid-js';
 
 const useStyleSheet = createStyleSheet((className) => `
   .${className} {
@@ -87,7 +96,14 @@ const useStyleSheet = createStyleSheet((className) => `
   }
 `);
 
-export type MarqueeProps<T extends ValidComponent, P = ComponentProps<T>> = {
+export type MarqueeProps<
+  T extends ValidComponent,
+  S1T extends ValidComponent = T,
+  S2T extends ValidComponent = T,
+  P = ComponentProps<T>,
+  S1P = ComponentProps<T>,
+  S2P = ComponentProps<T>
+> = {
   [K in keyof P]: P[K];
 } & JSX.HTMLAttributes<T> & {
   component?: T;
@@ -101,22 +117,50 @@ export type MarqueeProps<T extends ValidComponent, P = ComponentProps<T>> = {
   // For type checking
   style?: JSX.CSSProperties | string;
   class?: string;
+
+  // headless
+  slots?: {
+    first?: S1T;
+    second?: S2T;
+  }
+  slotProps?: {
+    first?: JSX.HTMLAttributes<S1T> & {
+      [K in keyof S1P]: S1P[K];
+    };
+    second?: JSX.HTMLAttributes<S2T> & {
+      [K in keyof S2P]: S2P[K];
+    };
+  };
 }
-const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
-  const [local, events, leftProps] = splitProps(mergeProps({
-    component: 'div',
-    gap: 0,
-    speed: 70,
-    direction: 'left',
-    mode: 'auto',
-  }, props), ['mode', 'gap', 'speed', 'direction', 'component'], ['onMouseEnter', 'onMouseLeave']);
+const Marquee = <
+  T extends ValidComponent,
+  S1T extends ValidComponent,
+  S2T extends ValidComponent
+>(props: MarqueeProps<T, S1T, S2T>) => {
+  const [
+    local,
+    events,
+    slots,
+    leftProps,
+  ] = splitProps(
+    mergeProps({
+      component: 'div',
+      gap: 0,
+      speed: 70,
+      direction: 'left',
+      mode: 'auto',
+    }, props),
+    ['mode', 'gap', 'speed', 'direction', 'component'],
+    ['onMouseEnter', 'onMouseLeave'],
+    ['slots', 'slotProps']
+  );
   const child1 = children(() => props.children);
   const child2 = children(() => props.children);
 
   /* signals */
-  let dom!: HTMLDivElement;
-  let child!: HTMLDivElement;
   let ignore = false;
+  const [dom, setDom] = createSignal<HTMLElement | null>(null);
+  const [child, setChild] = createSignal<HTMLElement | null>(null);
   const [useMarquee, setUseMarquee] = createSignal(false);
   const [scrollDuration, setScrollDuration] = createSignal(10000);
   const [hover, setHover] = createSignal(false);
@@ -133,34 +177,36 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
   };
   const enableTruncate = () => {
     if (local.mode === 'hover') return true;
-    if (local.mode === 'truncate') return true;
-
-    return false;
-  }
+    return local.mode === 'truncate';
+  };
 
   /* defines */
   const marqueeClassName = useStyleSheet();
   const isHorizontal = () => local.direction === 'left' || local.direction === 'right';
   const marqueeStyle = () => {
-    const value = child?.clientHeight ? `${child.clientHeight}px` : 'auto';
+    const childTarget = child();
+    const value = childTarget?.clientHeight ? `${childTarget.clientHeight}px` : 'auto';
     if (typeof leftProps.style === 'string') {
       const options = isHorizontal() ? '' : `height: ${value};`;
 
       return `${leftProps.style}; overflow: hidden; --duration: ${scrollDuration()}ms;${options}`;
-    };
-    
+    }
+
     return {
       ...leftProps.style,
       overflow: 'hidden',
       height: isHorizontal() ? '' : `${value}`,
       '--duration': `${scrollDuration()}ms`,
-    }
+    };
   };
 
   /* lifecycle */
   const updateOverflow = () => {
-    const scrollValue = isHorizontal() ? dom.scrollWidth : dom.scrollHeight;
-    const clientValue = isHorizontal() ? dom.clientWidth : dom.clientHeight;
+    const domTarget = dom();
+    if (!domTarget) return;
+
+    const scrollValue = isHorizontal() ? domTarget.scrollWidth : domTarget.scrollHeight;
+    const clientValue = isHorizontal() ? domTarget.clientWidth : domTarget.clientHeight;
 
     const offset = useMarquee() ? 2 : 1;
     const gap = useMarquee() ? local.gap : 0;
@@ -177,16 +223,18 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
 
       ignore = true;
     }
-  }
+  };
   const observer = new MutationObserver(updateOverflow);
-  onMount(() => {
+
+  createRenderEffect(() => {
+    const target = dom()?.parentElement ?? dom();
+
     const limitTime = Date.now() + (3 * 1000);
-    const target = dom?.parentElement ?? dom;
     const tryComputedOverflow = () => {
       if (Date.now() > limitTime) return;
 
       requestAnimationFrame(() => {
-        if (dom.clientWidth === 0) {
+        if ((dom()?.clientWidth ?? 0) === 0) {
           tryComputedOverflow();
         } else {
           updateOverflow();
@@ -196,12 +244,14 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
     };
     tryComputedOverflow();
 
-    observer.observe(target, {
-      characterData: true,
-      childList: true,
-      subtree: true,
-      attributes: true,
-    });
+    if (target) {
+      observer.observe(target, {
+        characterData: true,
+        childList: true,
+        subtree: true,
+        attributes: true,
+      });
+    }
   });
 
   createEffect(on([() => local.speed, () => local.direction], () => {
@@ -232,7 +282,7 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
   return (
     <Dynamic
       {...leftProps}
-      ref={dom}
+      ref={setDom}
       component={local.component as ValidComponent}
       style={marqueeStyle()}
       class={cx(marqueeClassName, local.direction, leftProps.class)}
@@ -240,18 +290,30 @@ const Marquee = <T extends ValidComponent>(props: MarqueeProps<T>) => {
       onMouseLeave={onMouseLeave}
     >
       <Dynamic
-        component={local.component as ValidComponent}
-        ref={child}
-        class={`${enableMarquee() ? `marquee ignore` : enableTruncate() ? 'truncate' : ''}`}
-        style={`padding-right: ${enableMarquee() ? local.gap : 0}px`}
+        {...slots.slotProps?.first}
+        component={slots.slots?.first?.component ?? local.component as ValidComponent}
+        ref={setChild}
+        class={cx(
+          slots.slotProps?.first?.class,
+          enableMarquee() && 'marquee ignore',
+          enableTruncate() && 'truncate',
+        )}
+        style={sx(
+          slots.slotProps?.first?.style,
+          enableMarquee() && { 'padding-right': `${local.gap}px` },
+        )}
       >
         {child1()}
       </Dynamic>
       <Show when={enableMarquee()}>
         <Dynamic
-          component={local.component as ValidComponent}
-          class={'marquee'}
-          style={`padding-right: ${local.gap}px`}
+          {...slots.slotProps?.second}
+          component={slots.slots?.second?.component ?? local.component as ValidComponent}
+          class={cx('marquee', slots.slotProps?.second?.class)}
+          style={sx(
+            slots.slotProps?.second?.style,
+            enableMarquee() && { 'padding-right': `${local.gap}px` },
+          )}
         >
           {child2()}
         </Dynamic>
