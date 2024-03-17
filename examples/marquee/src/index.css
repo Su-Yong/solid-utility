@@ -19,12 +19,14 @@ html, body {
 }
 
 .container {
-  width: 400px;
+  width: 100%;
+  max-width: 900px;
   height: fit-content;
   max-height: 80%;
 
-  display: flex;
-  flex-flow: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(auto, 300px));
+  grid-auto-rows: auto;
   justify-content: center;
   align-items: center;
   gap: 16px;
@@ -55,4 +57,13 @@ html, body {
 
   background: #666666;
   color: white;
+}
+
+.performance-card {
+  background: url('https://picsum.photos/900/600') no-repeat center center;
+}
+
+.performance {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(24px);
 }

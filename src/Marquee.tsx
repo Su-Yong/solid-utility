@@ -96,6 +96,9 @@ const useStyleSheet = createStyleSheet((className) => `
   }
 `);
 
+export type MarqueeRef<T = HTMLElement> = T & {
+  updateOverflow: () => void;
+};
 export type MarqueeProps<
   T extends ValidComponent,
   S1T extends ValidComponent = T,
@@ -105,7 +108,9 @@ export type MarqueeProps<
   S2P = ComponentProps<T>
 > = {
   [K in keyof P]: P[K];
-} & JSX.HTMLAttributes<T> & {
+} & Omit<JSX.HTMLAttributes<T>, 'ref'> & {
+  ref?: (element: MarqueeRef) => void;
+
   component?: T;
   children: JSX.Element;
 
@@ -113,6 +118,9 @@ export type MarqueeProps<
   gap?: number;
   speed?: number;
   direction?: 'left' | 'right' | 'up' | 'down';
+
+  // performance
+  autoUpdate?: boolean;
 
   // For type checking
   style?: JSX.CSSProperties | string;
@@ -150,7 +158,7 @@ const Marquee = <
       direction: 'left',
       mode: 'auto',
     }, props),
-    ['mode', 'gap', 'speed', 'direction', 'component'],
+    ['mode', 'gap', 'speed', 'direction', 'component', 'autoUpdate'],
     ['onMouseEnter', 'onMouseLeave'],
     ['slots', 'slotProps']
   );
@@ -166,6 +174,7 @@ const Marquee = <
   const [hover, setHover] = createSignal(false);
 
   /* computed */
+  const isHorizontal = () => local.direction === 'left' || local.direction === 'right';
   const enableMarquee = () => {
     if (local.mode === 'scroll') return true;
     if (local.mode === 'force-hover') return hover();
@@ -182,23 +191,6 @@ const Marquee = <
 
   /* defines */
   const marqueeClassName = useStyleSheet();
-  const isHorizontal = () => local.direction === 'left' || local.direction === 'right';
-  const marqueeStyle = () => {
-    const childTarget = child();
-    const value = childTarget?.clientHeight ? `${childTarget.clientHeight}px` : 'auto';
-    if (typeof leftProps.style === 'string') {
-      const options = isHorizontal() ? '' : `height: ${value};`;
-
-      return `${leftProps.style}; overflow: hidden; --duration: ${scrollDuration()}ms;${options}`;
-    }
-
-    return {
-      ...leftProps.style,
-      overflow: 'hidden',
-      height: isHorizontal() ? '' : `${value}`,
-      '--duration': `${scrollDuration()}ms`,
-    };
-  };
 
   /* lifecycle */
   const updateOverflow = () => {
@@ -227,6 +219,9 @@ const Marquee = <
   const observer = new MutationObserver(updateOverflow);
 
   createRenderEffect(() => {
+    observer.disconnect();
+    if (!local.autoUpdate) return;
+
     const target = dom()?.parentElement ?? dom();
 
     const limitTime = Date.now() + (3 * 1000);
@@ -282,9 +277,23 @@ const Marquee = <
   return (
     <Dynamic
       {...leftProps}
-      ref={setDom}
+      ref={(el: MarqueeRef) => {
+        setDom(el);
+
+        el.updateOverflow = updateOverflow;
+        leftProps.ref?.(el);
+      }}
       component={local.component as ValidComponent}
-      style={marqueeStyle()}
+      style={sx(
+        leftProps.style,
+        {
+          overflow: 'hidden',
+          '--duration': `${scrollDuration()}ms`,
+        },
+        !isHorizontal() && {
+          height: child() ? `${child()!.clientHeight}px` : 'auto',
+        },
+      )}
       class={cx(marqueeClassName, local.direction, leftProps.class)}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

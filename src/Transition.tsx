@@ -26,6 +26,10 @@ export interface TransitionProps {
 
   children?: JSX.Element;
 }
+
+/**
+ * @deprecated
+ */
 const Transition = (props: TransitionProps) => {
   const [listeners, classes, leftProps] = splitProps(
     mergeProps(

@@ -32,6 +32,5 @@ export const sx = <Element extends HTMLElement>(
     }
   });
 
-  console.log('sx', result);
   return result.map((it) => it[it.length - 1] === ';' ? it.trim() : `${it.trim()};`).join('\n');
 };
