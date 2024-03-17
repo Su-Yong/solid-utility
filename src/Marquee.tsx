@@ -157,6 +157,7 @@ const Marquee = <
       speed: 70,
       direction: 'left',
       mode: 'auto',
+      autoUpdate: true,
     }, props),
     ['mode', 'gap', 'speed', 'direction', 'component', 'autoUpdate'],
     ['onMouseEnter', 'onMouseLeave'],
