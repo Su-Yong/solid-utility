@@ -1,4 +1,4 @@
-import type { ComponentProps, ValidComponent } from 'solid-js';
+import { ComponentProps, onMount, ValidComponent } from 'solid-js';
 import {
   children,
   createEffect,
@@ -219,7 +219,7 @@ const Marquee = <
   };
   const observer = new MutationObserver(updateOverflow);
 
-  createRenderEffect(() => {
+  const listener = () => {
     observer.disconnect();
     if (!local.autoUpdate) return;
 
@@ -248,7 +248,10 @@ const Marquee = <
         attributes: true,
       });
     }
-  });
+  };
+
+  onMount(listener);
+  createRenderEffect(listener);
 
   createEffect(on([() => local.speed, () => local.direction], () => {
     updateOverflow();
