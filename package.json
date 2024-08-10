@@ -24,6 +24,7 @@
     "dev": "vite build --watch",
     "example:marquee": "cd examples/marquee && pnpm dev",
     "example:transition": "cd examples/transition && pnpm dev",
+    "example:flip": "cd examples/flip && pnpm dev",
     "release": "dotenv release-it"
   },
   "keywords": [

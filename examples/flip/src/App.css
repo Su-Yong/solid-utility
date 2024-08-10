@@ -1,0 +1,81 @@
+.card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+
+  padding: 16px;
+  resize: both;
+
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.flip1 {
+  width: 300px;
+  height: 300px;
+  background: red;
+}
+.flip1-end {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background: blue;
+}
+
+.grid {
+  --width: 50px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--width, 50px), 1fr));
+  gap: 1rem;
+}
+.grid-item {
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2em;
+  color: black;
+  border: solid 1px black;
+  backdrop-filter: blur(24px);
+}
+.grid-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  color: black;
+  border: solid 1px black;
+  padding: 2rem;
+
+  backdrop-filter: blur(8px);
+}
+
+.box {
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+
+  border: 1px solid black;
+}
+.red {
+  background-color: red;
+}
+.blue {
+  background-color: blue;
+}
