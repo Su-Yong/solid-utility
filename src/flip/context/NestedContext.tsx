@@ -7,27 +7,26 @@ import type { JSX } from 'solid-js/jsx-runtime';
 
 export interface NestedFlipContextProps {
   parentId: Accessor<string>;
-  parentState: Accessor<DOMState | null>;
-  prevParentState: Accessor<DOMState | null>;
+  firstParentState: Accessor<DOMState | null>;
+  lastParentState: Accessor<DOMState | null>;
 }
 
 export const NestedFlipContext = createContext<NestedFlipContextProps>();
 
 export interface NestedFlipProviderProps {
   id: string;
-  ref?: (element: JSX.Element) => void;
   children: JSX.Element;
 }
 
 export const NestedFlipProvider = (props: NestedFlipProviderProps) => {
-  const { getState, getPrevState } = useContext(FlipContext);
+  const { getFirstState, getLastState } = useContext(FlipContext);
   const parent = useContext(NestedFlipContext);
 
-  const parentState = createMemo(() => {
-    const state = getState(props.id);
+  const firstParentState = createMemo(() => {
+    const state = getFirstState(props.id);
     if (!state) return null;
 
-    const parentState = parent?.parentState();
+    const parentState = parent?.firstParentState();
 
     return {
       ...state,
@@ -39,11 +38,11 @@ export const NestedFlipProvider = (props: NestedFlipProviderProps) => {
       }),
     };
   });
-  const prevParentState = createMemo(() => {
-    const state = getPrevState(props.id);
+  const lastParentState = createMemo(() => {
+    const state = getLastState(props.id);
     if (!state) return null;
 
-    const parentState = parent?.prevParentState();
+    const parentState = parent?.lastParentState();
 
     return {
       ...state,
@@ -60,8 +59,8 @@ export const NestedFlipProvider = (props: NestedFlipProviderProps) => {
     <NestedFlipContext.Provider
       value={{
         parentId: () => props.id,
-        parentState,
-        prevParentState,
+        firstParentState,
+        lastParentState,
       }}
     >
       {props.children}

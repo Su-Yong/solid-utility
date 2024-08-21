@@ -28,14 +28,14 @@ function App() {
         <Show
           when={flip1()}
           fallback={
-            <Flip id={'flip1'} duration={3000}>
+            <Flip id={'flip1'}>
               <div class={'flip1-end'} onClick={() => setFlip1(!flip1())}>
                 Click again!
               </div>
             </Flip>
           }
         >
-          <Flip id={'flip1'} duration={3000}>
+          <Flip id={'flip1'}>
             <div class={'flip1'} onClick={() => setFlip1(!flip1())}>
               Click!
             </div>
@@ -72,13 +72,15 @@ function App() {
         >
           flip
         </button>
-        <div class={'grid'}
-             style={'--width: 300px; background: url(https://picsum.photos/1920); background-size: contain;'}>
-          <Flip.Index each={flip3()}>
+        <div
+          class={'grid'}
+          style={'--width: 300px;'}
+        >
+          <Flip.For each={flip3()}>
             {(item) => (
-              <Flip id={`flip3-group-${item().id}`}>
+              <Flip id={`flip3-group-${item.id}`}>
                 <div class={'grid-group'}>
-                  <Flip.For each={item().items}>
+                  <Flip.For each={item.items}>
                     {(subItem) => (
                       <Flip id={`flip3-${subItem}`}>
                         <div class={'grid-item'}>
@@ -90,7 +92,7 @@ function App() {
                 </div>
               </Flip>
             )}
-          </Flip.Index>
+          </Flip.For>
         </div>
       </div>
       <div class={'card'}>
@@ -102,10 +104,10 @@ function App() {
         >
           count {flip4() + 1}
         </button>
-        <Flip id={'flip4'} duration={3000}>
+        <Flip id={'flip4'}>
           <div class={`box ${flip4() % 3 === 0 ? 'red' : 'blue'}`}>
             Flip4 Outer
-            <Flip id={'flip4-inner'} duration={3000}>
+            <Flip id={'flip4-inner'}>
               <div class={`box ${flip4() % 2 === 0 ? 'red' : 'blue'}`}>
                 Flip4 Inner
               </div>

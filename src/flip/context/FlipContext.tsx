@@ -4,20 +4,29 @@ import type { JSX } from 'solid-js/jsx-runtime';
 import { captureState, DOMState } from '../state.ts';
 
 export interface FlipContextProps {
-  state: Accessor<Record<string, DOMState | null>>;
-  getState: (id: string) => DOMState | null;
-  getPrevState: (id: string) => DOMState | null;
-  setState: (id: string, state: DOMState | null) => void;
-  recordState: (id: string, element: Element) => void;
+  firstState: Accessor<Record<string, DOMState | null>>;
+  lastState: Accessor<Record<string, DOMState | null>>;
+  getFirstState: (id: string) => DOMState | null;
+  getLastState: (id: string) => DOMState | null;
+
+  setFirstState: (id: string, state: DOMState | null) => void;
+  recordFirstState: (id: string, element: Element) => void;
+  setLastState: (id: string, state: DOMState | null) => void;
+  recordLastState: (id: string, element: Element) => void;
 }
 
 export const FlipContext = createContext<FlipContextProps>({
-  state: () => ({}),
-  getState: () => null,
-  getPrevState: () => null,
-  setState: () => {
+  firstState: () => ({}),
+  lastState: () => ({}),
+  getFirstState: () => null,
+  getLastState: () => null,
+  setFirstState: () => {
   },
-  recordState: () => {
+  recordFirstState: () => {
+  },
+  setLastState: () => {
+  },
+  recordLastState: () => {
   },
 });
 
@@ -28,30 +37,37 @@ export interface FlipProviderProps {
 }
 
 export const FlipProvider = (props: FlipProviderProps) => {
-  const [state, setState] = createSignal<Record<string, DOMState | null>>({});
-  const [prevState, setPrevState] = createSignal<Record<string, DOMState | null>>({});
+  const [firstState, setFirstState] = createSignal<Record<string, DOMState | null>>({});
+  const [lastState, setLastState] = createSignal<Record<string, DOMState | null>>({});
 
   return (
     <BaseFlipProvider
       value={{
-        state,
-        getState: (id) => state()[id],
-        getPrevState: (id) => prevState()[id],
-        setState: (id, newState) => {
-          // console.log('capture(set)', id);
-          setPrevState((prev) => ({ ...prev, [id]: state()[id] }));
-          setState((prev) => ({ ...prev, [id]: newState }));
+        firstState,
+        lastState,
+        getFirstState: (id) => firstState()[id],
+        getLastState: (id) => lastState()[id],
+
+        setFirstState: (id, newState) => {
+          setFirstState((prev) => ({ ...prev, [id]: newState }));
         },
-        recordState: (id, element) => {
+        recordFirstState: (id, element) => {
           const newState = captureState(element);
           if (newState.rect.width === 0 && newState.rect.height === 0) return;
 
-          // console.log('capture(record)', id);
-          setPrevState((prev) => ({
+          setFirstState((prev) => ({
             ...prev,
-            [id]: state()[id],
+            [id]: newState,
           }));
-          setState((prev) => ({
+        },
+        setLastState: (id, newState) => {
+          setLastState((prev) => ({ ...prev, [id]: newState }));
+        },
+        recordLastState: (id, element) => {
+          const newState = captureState(element);
+          if (newState.rect.width === 0 && newState.rect.height === 0) return;
+
+          setLastState((prev) => ({
             ...prev,
             [id]: newState,
           }));

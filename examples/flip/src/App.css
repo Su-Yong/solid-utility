@@ -47,7 +47,6 @@
   font-size: 2em;
   color: black;
   border: solid 1px black;
-  backdrop-filter: blur(24px);
 }
 .grid-group {
   display: flex;
@@ -58,8 +57,6 @@
   color: black;
   border: solid 1px black;
   padding: 2rem;
-
-  backdrop-filter: blur(8px);
 }
 
 .box {
@@ -75,7 +72,9 @@
 }
 .red {
   background-color: red;
+  padding: 1rem;
 }
 .blue {
   background-color: blue;
+  padding: 5rem;
 }
