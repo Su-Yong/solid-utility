@@ -49,6 +49,6 @@
     "solid-js": "*"
   },
   "dependencies": {
-    "nanoid": "5.0.6"
+    "nanoid": "5.0.9"
   }
 }
